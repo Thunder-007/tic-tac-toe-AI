@@ -3,19 +3,89 @@ let board = [
     ['', '', ''],
     ['', '', '']
 ];
+
+let width = 400;
+let height = 400;
+let one_third_width;
+let one_third_height;
+
 let ai = 'X';
 let human = 'O';
-let curr_player = human;
+let currentPlayer = human;
 let result_message = document.getElementById("result_message");
-let width = 300;
-let height = 300;
-let one_third_width = width / 3;
-let one_third_height = height / 3;
+
 
 function setup() {
     canvas = createCanvas(width, height);
     canvas.parent('p5canvas');
     frameRate(10);
+    one_third_width = width / 3;
+    one_third_height = height / 3;
+}
+
+function bestMove() {
+    let winner = checkWinner();
+    if (winner != null) {
+        return;
+    }
+    let bestScore = -Infinity;
+    let move;
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (board[i][j] == '') {
+                board[i][j] = ai;
+                let score = minimax(board, 0, false);
+                board[i][j] = '';
+                if (score > bestScore) {
+                    bestScore = score;
+                    move = {i, j};
+                }
+            }
+        }
+    }
+    board[move.i][move.j] = ai;
+    currentPlayer = human;
+}
+
+let scores = {
+    X: 1,
+    O: -1,
+    tie: 0
+};
+
+function minimax(board, depth, isMaximizing) {
+    let result = checkWinner();
+    if (result !== null) {
+        return scores[result];
+    }
+    if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[i][j] == '') {
+                    board[i][j] = ai;
+                    let score = minimax(board, depth + 1, false);
+                    board[i][j] = '';
+                    bestScore = max(score, bestScore);
+                }
+            }
+        }
+        return bestScore;
+
+    } else {
+        let bestScore = Infinity;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[i][j] == '') {
+                    board[i][j] = human;
+                    let score = minimax(board, depth + 1, true);
+                    board[i][j] = '';
+                    bestScore = min(score, bestScore);
+                }
+            }
+        }
+        return bestScore;
+    }
 }
 
 function checkWinner() {
@@ -30,8 +100,6 @@ function checkWinner() {
     }
     if (board[0][0] === board[1][1] && board[1][1] === board[2][2] && board[0][0] !== '') {
         winner = board[0][0];
-    } else if (board[0][2] === board[1][1] && board[1][1] === board[2][0] && board[1][1] !== '') {
-        winner = board[0][2];
     }
     for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 3; col++) {
@@ -42,41 +110,20 @@ function checkWinner() {
     }
     if (winner == null && !open_spot_exists) {
         return 'tie';
+    } else {
+        return winner;
     }
-    return winner;
-}
-
-
-function nextTurn() {
-    let available_spots = [];
-    for(let row = 0 ; row < 3 ; row++) {
-        for(let col = 0 ; col < 3 ; col++) {
-            if(board[row][col] == '') {
-                available_spots.push([row, col]);
-            }
-        }
-    }
-    if(available_spots.length == 0) {
-        return false;
-    }
-    let random_index = floor(random(available_spots.length));
-    let random_spot = available_spots[random_index];
-    let row = random_spot[0];
-    let col = random_spot[1];
-    board[row][col] = ai;
-    return true;
 }
 
 function mousePressed() {
-    if (curr_player == human) {
-        let row = floor(mouseY / one_third_height);
-        let col = floor(mouseX / one_third_width);
-        if(row >= 0 && row < 3 && col >= 0 && col < 3)
-            if (board[row][col] == '' && curr_player == human ) {
-                board[row][col] = human;
-                currentPlayer = ai;
-                nextTurn();
-            }
+    if (currentPlayer == human) {
+        let i = floor(mouseY / one_third_height);
+        let j = floor(mouseX / one_third_width);
+        if (board[i][j] == '') {
+            board[i][j] = human;
+            currentPlayer = ai;
+            bestMove();
+        }
     }
 }
 
