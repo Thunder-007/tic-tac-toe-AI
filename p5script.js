@@ -88,27 +88,35 @@ function minimax(board, depth, isMaximizing) {
     }
 }
 
+
 function checkWinner() {
     let winner = null;
-    let open_spot_exists = false;
-    for (let index = 0; index < 3; index++) {
-        if (board[index][0] === board[index][1] && board[index][1] === board[index][2] && board[index][0] !== '') {
-            winner = board[index][0];
-        } else if (board[0][index] === board[1][index] && board[1][index] === board[2][index] && board[0][index] !== '') {
-            winner = board[0][index];
+    for (let i = 0; i < 3; i++) {
+        if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != '') {
+            winner = board[i][0];
+            break;
+        } else if (board[0][i] == board[1][i] && board[1][i] == board[2][i] && board[0][i] != '') {
+            winner = board[0][i];
+            break;
         }
     }
-    if (board[0][0] === board[1][1] && board[1][1] === board[2][2] && board[0][0] !== '') {
-        winner = board[0][0];
+    if (winner == null)
+        if (board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != '') {
+            winner = board[0][0];
+        }
+    if (board[2][0] == board[1][1] && board[1][1] == board[0][2] && board[2][0] != '') {
+        winner = board[2][0];
     }
-    for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 3; col++) {
-            if (board[row][col] === '') {
-                open_spot_exists = true;
+    let openSpots = 0;
+    if (winner == null)
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[i][j] == '') {
+                    openSpots++;
+                }
             }
         }
-    }
-    if (winner == null && !open_spot_exists) {
+    if (winner == null && openSpots == 0) {
         return 'tie';
     } else {
         return winner;
@@ -161,11 +169,9 @@ function draw() {
         noLoop();
         if (result == 'tie') {
             result_message.innerHTML = "It's a tie!";
-        }
-        else if (result == human) {
+        } else if (result == human) {
             result_message.innerHTML = `You won!`;
-        }
-        else {
+        } else {
             result_message.innerHTML = `AI won!`;
         }
     }
