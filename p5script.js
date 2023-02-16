@@ -34,7 +34,7 @@ function bestMove() {
         for (let j = 0; j < 3; j++) {
             if (board[i][j] == '') {
                 board[i][j] = ai;
-                let score = minimax(board, 0, false);
+                let score = minimax(board, 0, false, -Infinity, Infinity);
                 board[i][j] = '';
                 if (score > bestScore) {
                     bestScore = score;
@@ -53,20 +53,28 @@ let scores = {
     tie: 0
 };
 
-function minimax(board, depth, isMaximizing) {
+function minimax(board, depth, isMaximizing, alpha, beta) {
     let result = checkWinner();
     if (result !== null) {
         return scores[result];
     }
+    let flag = false;
     if (isMaximizing) {
         let bestScore = -Infinity;
         for (let i = 0; i < 3; i++) {
+            if (flag)
+                break;
             for (let j = 0; j < 3; j++) {
                 if (board[i][j] == '') {
                     board[i][j] = ai;
-                    let score = minimax(board, depth + 1, false);
+                    let score = minimax(board, depth + 1, false, alpha, beta);
                     board[i][j] = '';
-                    bestScore = max(score, bestScore);
+                    bestScore = max(bestScore, score);
+                    alpha = max(alpha, score);
+                    if (beta <= alpha) {
+                        flag = true;
+                        break;
+                    }
                 }
             }
         }
@@ -75,12 +83,19 @@ function minimax(board, depth, isMaximizing) {
     } else {
         let bestScore = Infinity;
         for (let i = 0; i < 3; i++) {
+            if (flag)
+                break;
             for (let j = 0; j < 3; j++) {
                 if (board[i][j] == '') {
                     board[i][j] = human;
-                    let score = minimax(board, depth + 1, true);
+                    let score = minimax(board, depth + 1, true, alpha, beta);
                     board[i][j] = '';
                     bestScore = min(score, bestScore);
+                    beta = min(beta, score);
+                    if (beta <= alpha) {
+                        flag = true;
+                        break;
+                    }
                 }
             }
         }
